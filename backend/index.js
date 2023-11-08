@@ -2,7 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import { Book } from "./models/bookModel.js";
 
- import { PORT, mongoDBURL } from "./config.js";
+import { PORT, mongoDBURL } from "./config.js";
 
 const app = express();
 
@@ -13,10 +13,7 @@ app.get("/", (request, response) => {
   return response.status(234).send("welcome to shreyash app");
 });
 
-
-
-
-//posting the book data 
+//posting the book data
 app.post("/books", async (request, response) => {
   try {
     if (
@@ -43,40 +40,36 @@ app.post("/books", async (request, response) => {
   }
 });
 
-
 //getting the list of all books
-app.get('/books',async(request, response)=>{
-    try {
-        const books = await Book.find({});
-        return response.status(200).json({
-            count: books.length,
-            data: books
-        });
-    } catch (error) {
-        console.log(error.message);
-        response.status(500).send({message: error.message});
-    }
+app.get("/books", async (request, response) => {
+  try {
+    const books = await Book.find({});
+    return response.status(200).json({
+      count: books.length,
+      data: books,
+    });
+  } catch (error) {
+    console.log(error.message);
+    response.status(500).send({ message: error.message });
+  }
 });
 
 //getting a book by its id as param
-app.get('/books/:id',async(request, response)=>{
-    try {
+app.get("/books/:id", async (request, response) => {
+  try {
+    const { id } = request.params;
 
-        const { id } = request.params;
+    const book = await Book.findById(id);
 
-        
-        const book = await Book.findById(id);
-        
-        return response.status(200).json({book});
-    } catch (error) {
-        console.log(error.message);
-        response.status(500).send({message: error.message});
-    }
+    return response.status(200).json({ book });
+  } catch (error) {
+    console.log(error.message);
+    response.status(500).send({ message: error.message });
+  }
 });
 
-
 //route for updating a Book
-app.put('/books/:id', async (request, response) => {
+app.put("/books/:id", async (request, response) => {
   try {
     if (
       !request.body.title ||
@@ -88,28 +81,42 @@ app.put('/books/:id', async (request, response) => {
       });
     }
 
-    const {id} = request.params;
+    const { id } = request.params;
 
     const result = await Book.findByIdAndUpdate(id, request.body);
 
-    if(!result){
-      return response.status(404).json({message:"Book not found"});
+    if (!result) {
+      return response.status(404).json({ message: "Book not found" });
+    } else {
+      return response
+        .status(200)
+        .send({ message: "Book updated successfully" });
     }
-    else{
-      return response.status(200).send({message:"Book updated successfully"});
-    }
-
-     
   } catch (error) {
-      console.log(error.message);
-      response.status(500).send({message: error.message});
+    console.log(error.message);
+    response.status(500).send({ message: error.message });
   }
 });
 
+//route to delete a book
+app.delete("/books/:id", async (request, response) => {
+  try {
+    const { id } = request.params;
 
+    const result = await Book.findByIdAndDelete(id, request.body);
 
-
-
+    if (!result) {
+      return response.status(404).json({ message: "Book not found" });
+    } else {
+      return response
+        .status(200)
+        .send({ message: "Book deleted successfully" });
+    }
+  } catch (error) {
+    console.log(error.message);
+    response.status(500).send({ message: error.message });
+  }
+});
 
 mongoose
   .connect(mongoDBURL)
